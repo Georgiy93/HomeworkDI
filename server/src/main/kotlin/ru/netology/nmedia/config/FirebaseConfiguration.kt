@@ -6,8 +6,8 @@ import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Lazy
 import java.io.FileInputStream
+import org.springframework.context.annotation.Lazy
 
 @Configuration
 class FirebaseConfiguration {
