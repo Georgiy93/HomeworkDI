@@ -18,8 +18,9 @@ import javax.inject.Singleton
 @Module
 class ApiServiceModule {
     companion object {
-    private const val BASE_URL="${BuildConfig.BASE_URL}/api/slow/"
+        private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
     }
+
     @Singleton
     @Provides
 
@@ -29,22 +30,26 @@ class ApiServiceModule {
             level = HttpLoggingInterceptor.Level.BODY
         }
     }
+
     @Singleton
     @Provides
 
-    fun provideOkHttp(logger: HttpLoggingInterceptor,auth: AppAuth): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(logger)
-        .addInterceptor{chain ->auth.authStateFlow.value.token?.let{
-            token->
-            val newRequest =chain.request().newBuilder()
-            .addHeader("Authorization", token)
-                .build()
-            return@addInterceptor chain.proceed(newRequest)
-        }
-        chain.proceed(chain.request())}
+    fun provideOkHttp(logger: HttpLoggingInterceptor, auth: AppAuth): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(logger)
+            .addInterceptor { chain ->
+                auth.authStateFlow.value.token?.let { token ->
+                    val newRequest = chain.request().newBuilder()
+                        .addHeader("Authorization", token)
+                        .build()
+                    return@addInterceptor chain.proceed(newRequest)
+                }
+                chain.proceed(chain.request())
+            }
 
 
-        .build()
+            .build()
+
     @Singleton
     @Provides
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
@@ -52,9 +57,10 @@ class ApiServiceModule {
         .baseUrl(BASE_URL)
         .client(okHttpClient)
         .build()
+
     @Singleton
     @Provides
-    fun provideApiService(retrofit: Retrofit): ApiService= retrofit.create()
+    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create()
 }
 
 
