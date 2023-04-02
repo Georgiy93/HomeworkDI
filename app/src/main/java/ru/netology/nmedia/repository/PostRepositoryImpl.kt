@@ -33,11 +33,9 @@ class PostRepositoryImpl @Inject constructor(
     override val data =
         Pager(config = PagingConfig(pageSize = 10, enablePlaceholders = false),
             pagingSourceFactory = {
-            PostPagingSource(apiService)
-        }).flow
-//        postDao.getAll()
-//        .map(List<PostEntity>::toDto)
-//        .flowOn(Dispatchers.Default)
+                PostPagingSource(apiService)
+            }).flow
+
 
     override suspend fun getAll() {
         try {

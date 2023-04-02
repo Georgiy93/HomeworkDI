@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
@@ -42,12 +41,11 @@ class PostViewModel @Inject constructor(
     private val repository: PostRepository,
     auth: AppAuth,
 ) : ViewModel() {
-    private val _state = MutableLiveData(FeedModelState())
+
     private val _messageError = SingleLiveEvent<String>()
     val messageError: LiveData<String>
         get() = _messageError
-    val state: LiveData<FeedModelState>
-        get() = _state
+
     val data: Flow<PagingData<Post>> = auth.authStateFlow
         .flatMapLatest { (myId, _) ->
             repository.data
@@ -134,7 +132,7 @@ class PostViewModel @Inject constructor(
             try {
                 repository.likeById(post)
 
-                _state.value = FeedModelState()
+                _dataState.value = FeedModelState()
 
 
             } catch (e: Exception) {
