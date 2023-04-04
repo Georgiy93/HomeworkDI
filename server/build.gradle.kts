@@ -3,10 +3,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "3.0.0"
     id("io.spring.dependency-management") version "1.1.0"
-    val kotlinVersion = "1.7.21"
-    id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
-    kotlin("jvm") version kotlinVersion
-    kotlin("plugin.spring") version kotlinVersion
+    id("org.jetbrains.kotlin.plugin.jpa") version "1.7.21"
+    kotlin("jvm") version "1.7.21"
+    kotlin("plugin.spring") version "1.7.21"
 }
 
 group = "ru.netology"
@@ -26,6 +25,7 @@ dependencies {
     }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    
     implementation("org.apache.tika:tika-core:2.6.0")
     implementation("com.google.firebase:firebase-admin:9.1.1")
     runtimeOnly("com.h2database:h2")

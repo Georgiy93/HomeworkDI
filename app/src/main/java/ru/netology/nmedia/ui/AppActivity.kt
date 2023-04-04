@@ -28,6 +28,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     lateinit var auth: AppAuth
     private val viewModel: AuthViewModel by viewModels()
 
+
     @Inject
     lateinit var firebaseMessaging: FirebaseMessaging
 
