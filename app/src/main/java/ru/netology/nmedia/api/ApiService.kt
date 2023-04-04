@@ -12,8 +12,6 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PushToken
 
 
-
-
 interface ApiService {
     @POST("users/push-tokens")
     suspend fun save(@Body pushToken: PushToken): Response<Unit>

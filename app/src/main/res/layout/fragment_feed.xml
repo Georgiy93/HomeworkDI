@@ -57,5 +57,6 @@
         android:focusable="true"
         android:layout_gravity="bottom|end"
         app:srcCompat="@drawable/ic_add_24dp" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

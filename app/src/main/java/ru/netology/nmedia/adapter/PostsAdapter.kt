@@ -77,7 +77,7 @@ class PostViewHolder(
                 like.isChecked = post.likedByMe
                 onInteractionListener.onLike(post)
             }
-
+            like.isChecked = post.likedByMe
             share.setOnClickListener {
                 like.isChecked = post.likedByMe
                 onInteractionListener.onShare(post)
