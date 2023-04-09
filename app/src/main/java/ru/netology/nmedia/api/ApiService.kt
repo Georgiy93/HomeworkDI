@@ -13,7 +13,8 @@ import ru.netology.nmedia.dto.PushToken
 
 
 interface ApiService {
-
+    @DELETE
+    suspend fun clear(): Response<List<Post>>
     @POST("users/push-tokens")
     suspend fun save(@Body pushToken: PushToken): Response<Unit>
 

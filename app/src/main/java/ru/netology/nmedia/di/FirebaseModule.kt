@@ -12,7 +12,8 @@ import dagger.hilt.components.SingletonComponent
 class FirebaseModule {
     @Provides
     fun provideFirebaseMessaging(): FirebaseMessaging = FirebaseMessaging.getInstance()
+
     @Provides
-    fun googleApiAvailability(): GoogleApiAvailability=GoogleApiAvailability.getInstance()
+    fun googleApiAvailability(): GoogleApiAvailability = GoogleApiAvailability.getInstance()
 
 }

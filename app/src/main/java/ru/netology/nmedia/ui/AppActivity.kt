@@ -34,16 +34,16 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     lateinit var googleApiAvailability: GoogleApiAvailability
 
         override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
+        super.onCreate(savedInstanceState)
 
-            intent?.let {
-                if (it.action != Intent.ACTION_SEND) {
-                    return@let
-                }
+        intent?.let {
+            if (it.action != Intent.ACTION_SEND) {
+                return@let
+            }
 
-                val text = it.getStringExtra(Intent.EXTRA_TEXT)
-                if (text?.isNotBlank() != true) {
-                    return@let
+            val text = it.getStringExtra(Intent.EXTRA_TEXT)
+            if (text?.isNotBlank() != true) {
+                return@let
             }
 
             intent.removeExtra(Intent.EXTRA_TEXT)
