@@ -1,6 +1,7 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.*
+import android.content.Context
+import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -9,9 +10,9 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
 import ru.netology.nmedia.api.*
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.*
 import ru.netology.nmedia.entity.PostEntity
-import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.enumeration.AttachmentType
 import ru.netology.nmedia.error.ApiError
@@ -26,10 +27,25 @@ import javax.inject.Singleton
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
     private val apiService: ApiService,
+    private val postRemoteKeyDao: PostRemoteKeyDao,
+    private val appDb: AppDb,
 ) : PostRepository {
-    override val data = postDao.getAll()
-        .map(List<PostEntity>::toDto)
-        .flowOn(Dispatchers.Default)
+    @OptIn(ExperimentalPagingApi::class)
+    override val data: Flow<PagingData<Post>> =
+        Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { postDao.getPagingSource() },
+            remoteMediator = PostRemoteMediator(
+                service = apiService,
+                postDao = postDao,
+                postRemoteKeyDao = postRemoteKeyDao,
+                appDb = appDb,
+            )
+        ).flow
+            .map { pagingData ->
+                pagingData.map(PostEntity::toDto)
+            }
+
 
     override suspend fun getAll() {
         try {
@@ -100,7 +116,6 @@ class PostRepositoryImpl @Inject constructor(
         val postResponse = apiService.let {
             if (likedByMeValue)
                 it.dislikeById(post.id)
-
             else
                 it.likeById(post.id)
         }
@@ -108,11 +123,9 @@ class PostRepositoryImpl @Inject constructor(
             throw HttpException(postResponse)
 
         }
-        val updatedPost=postResponse.body() ?:throw HttpException(postResponse)
+        val updatedPost = postResponse.body() ?: throw HttpException(postResponse)
         val postEntity = PostEntity.fromDto(updatedPost)
         postDao.insert(postEntity)
-
-
 
 
     }

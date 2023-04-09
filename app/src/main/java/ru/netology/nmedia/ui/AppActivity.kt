@@ -27,24 +27,23 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     @Inject
     lateinit var auth: AppAuth
     private val viewModel: AuthViewModel by viewModels()
-
     @Inject
     lateinit var firebaseMessaging: FirebaseMessaging
 
     @Inject
     lateinit var googleApiAvailability: GoogleApiAvailability
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
 
-        intent?.let {
-            if (it.action != Intent.ACTION_SEND) {
-                return@let
-            }
+            intent?.let {
+                if (it.action != Intent.ACTION_SEND) {
+                    return@let
+                }
 
-            val text = it.getStringExtra(Intent.EXTRA_TEXT)
-            if (text?.isNotBlank() != true) {
-                return@let
+                val text = it.getStringExtra(Intent.EXTRA_TEXT)
+                if (text?.isNotBlank() != true) {
+                    return@let
             }
 
             intent.removeExtra(Intent.EXTRA_TEXT)

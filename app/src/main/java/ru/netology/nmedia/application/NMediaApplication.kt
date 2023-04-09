@@ -9,4 +9,6 @@ import ru.netology.nmedia.auth.AppAuth
 import javax.inject.Inject
 
 @HiltAndroidApp
-class NMediaApplication : Application()
+class NMediaApplication : Application() {
+
+}
