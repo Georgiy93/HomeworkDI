@@ -1,6 +1,5 @@
 package ru.netology.nmedia.controller
 
-import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import ru.netology.nmedia.dto.Post
@@ -14,11 +13,23 @@ class PostController(private val service: PostService) {
     // @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun getAll() = service.getAll()
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     fun getById(@PathVariable id: Long) = service.getById(id)
+
+    @GetMapping("/latest")
+    fun getLatest(@RequestParam count: Int) = service.getLatest(count)
 
     @GetMapping("/{id}/newer")
     fun getNewer(@PathVariable id: Long) = service.getNewer(id)
+
+    @GetMapping("/{id}/newer-count")
+    fun getNewerCount(@PathVariable id: Long) = service.getNewerCount(id)
+
+    @GetMapping("/{id}/before")
+    fun getBefore(@PathVariable id: Long, @RequestParam count: Int) = service.getBefore(id, count)
+
+    @GetMapping("/{id}/after")
+    fun getAfter(@PathVariable id: Long, @RequestParam count: Int) = service.getAfter(id, count)
 
     @PostMapping
     @PreAuthorize("hasRole('USER')")

@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
@@ -63,10 +64,15 @@ class FeedFragment : Fragment() {
         viewModel.messageError.observe(
             viewLifecycleOwner,
             Observer { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() })
-        binding.list.adapter = adapter
+
+        binding.list.adapter =
+            adapter.withLoadStateHeaderAndFooter(header = PostLoadingStateAdapter {
+                adapter.retry()
+            }, footer = PostLoadingStateAdapter { adapter.retry() })
+
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
-            binding.swiperefresh.isRefreshing = state.refreshing
+            // binding.swiperefresh.isRefreshing = state.refreshing
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
@@ -77,12 +83,13 @@ class FeedFragment : Fragment() {
             viewModel.data.collectLatest { adapter.submitData(it) }
         }
 
+//Refreshing SwipeRefreshLayout is displayed only with manual Refresh
         lifecycleScope.launchWhenCreated {
             adapter.loadStateFlow.collectLatest {
                 binding.swiperefresh.isRefreshing =
-                    it.refresh is LoadState.Loading ||
-                            it.append is LoadState.Loading ||
-                            it.prepend is LoadState.Loading
+                    it.refresh is LoadState.Loading &&
+                            it.append !is LoadState.Loading &&
+                            it.prepend !is LoadState.Loading
             }
         }
 

@@ -33,12 +33,17 @@ class PostRemoteMediator(
         loadType: LoadType,
         state: PagingState<Int, PostEntity>
     ): MediatorResult {
+
         try {
-//            if(postDao.count()==0){
-//                service.clear()}
+
 
             val result = when (loadType) {
+
                 LoadType.REFRESH -> {
+
+                    service.getLatest(state.config.pageSize)
+                }
+                LoadType.PREPEND -> {
 
                     service.getLatest(state.config.pageSize)
                 }
@@ -51,11 +56,13 @@ class PostRemoteMediator(
                 }
 
                 LoadType.APPEND -> {
+
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
                     service.getBefore(id, state.config.pageSize)
-                }
 
+                }
             }
+
             if (!result.isSuccessful) {
                 throw HttpException(result)
             }
@@ -66,7 +73,6 @@ class PostRemoteMediator(
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        println("1")
 
 
                         postDao.clear()
@@ -84,7 +90,7 @@ class PostRemoteMediator(
                         )
                     }
                     LoadType.PREPEND -> {
-                        println("1")
+
                         postRemoteKeyDao.insert(
                             listOf(
                                 PostRemoteKeyEntity(
@@ -96,7 +102,7 @@ class PostRemoteMediator(
                         )
                     }
                     LoadType.APPEND -> {
-                        println("1")
+
                         postRemoteKeyDao.insert(
                             listOf(
 

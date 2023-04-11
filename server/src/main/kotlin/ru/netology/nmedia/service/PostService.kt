@@ -5,14 +5,19 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.entity.AttachmentEmbeddable
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.exception.NotFoundException
 import ru.netology.nmedia.exception.PermissionDeniedException
 import ru.netology.nmedia.extensions.principal
 import ru.netology.nmedia.repository.PostRepository
 import java.time.OffsetDateTime
+import java.util.stream.Collectors
+import org.springframework.data.domain.PageRequest
+import ru.netology.nmedia.dto.NewerCount
+import ru.netology.nmedia.entity.AttachmentEmbeddable
 import ru.netology.nmedia.repository.UserRepository
+
+const val maxLoadSize = 100
 
 @Service
 @Transactional
@@ -36,11 +41,54 @@ class PostService(
             .toDto(principal.id)
     }
 
+    fun getLatest(count: Int): List<Post> {
+        val principal = principal()
+        return postRepository
+            .findAll(
+                PageRequest.of(
+                    0,
+                    minOf(maxLoadSize, count),
+                    Sort.by(Sort.Direction.DESC, "id")
+                )
+            )
+            .content
+            .map { it.toDto(principal.id) }
+    }
+
     fun getNewer(id: Long): List<Post> {
         val principal = principal()
         return postRepository
-            .findAllByIdGreaterThan(id, Sort.by(Sort.Direction.DESC, "id"))
+            .findAllByIdGreaterThan(id, Sort.by(Sort.Direction.ASC, "id"))
             .map { it.toDto(principal.id) }
+            .collect(Collectors.toList())
+    }
+
+    fun getNewerCount(id: Long): NewerCount {
+        return postRepository
+            .findAllByIdGreaterThan(id, Sort.by(Sort.Direction.ASC, "id"))
+            .count()
+            .let(::NewerCount)
+    }
+
+    fun getBefore(id: Long, count: Int): List<Post> {
+        val principal = principal()
+        return postRepository
+            .findAllByIdLessThan(id, Sort.by(Sort.Direction.DESC, "id"))
+            // just for simplicity: use normal limiting in production
+            .limit(minOf(maxLoadSize, count).toLong())
+            .map { it.toDto(principal.id) }
+            .collect(Collectors.toList())
+    }
+
+    fun getAfter(id: Long, count: Int): List<Post> {
+        val principal = principal()
+        return postRepository
+            .findAllByIdGreaterThan(id, Sort.by(Sort.Direction.ASC, "id"))
+            // just for simplicity: use normal limiting in production
+            .limit(minOf(maxLoadSize, count).toLong())
+            .map { it.toDto(principal.id) }
+            .collect(Collectors.toList())
+            .reversed()
     }
 
     fun save(dto: Post): Post {
@@ -112,7 +160,11 @@ class PostService(
         dto.copy(
             likes = 0,
             likedByMe = false,
-            published = OffsetDateTime.now().toEpochSecond()
+            published = if (dto.published == 0L) {
+                OffsetDateTime.now().toEpochSecond()
+            } else {
+                dto.published
+            }
         )
     ).let {
         it.content = dto.content

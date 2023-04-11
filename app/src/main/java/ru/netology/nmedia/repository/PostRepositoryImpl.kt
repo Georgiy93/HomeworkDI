@@ -21,6 +21,7 @@ import ru.netology.nmedia.error.UnknownError
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class PostRepositoryImpl @Inject constructor(
@@ -30,7 +31,7 @@ class PostRepositoryImpl @Inject constructor(
     private val appDb: AppDb,
 ) : PostRepository {
     @OptIn(ExperimentalPagingApi::class)
-    override val data: Flow<PagingData<Post>> =
+    override val data: Flow<PagingData<FeedItem>> =
         Pager(
             config = PagingConfig(pageSize = 10, enablePlaceholders = false),
             pagingSourceFactory = { postDao.getPagingSource() },
@@ -43,6 +44,13 @@ class PostRepositoryImpl @Inject constructor(
         ).flow
             .map { pagingData ->
                 pagingData.map(PostEntity::toDto)
+                    .insertSeparators { previous, _ ->
+                        if (previous?.id?.rem(5) == 0L) {
+                            Ad(Random.nextLong(), "figma.jpg")
+                        } else {
+                            null
+                        }
+                    }
             }
 
 
