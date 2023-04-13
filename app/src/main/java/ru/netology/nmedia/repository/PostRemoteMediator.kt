@@ -41,25 +41,25 @@ class PostRemoteMediator(
 
                 LoadType.REFRESH -> {
 
-                    service.getLatest(state.config.pageSize)
+
+                    val id = postRemoteKeyDao.max()
+
+                    if (id == null) {
+                        service.getLatest(state.config.pageSize)
+                    } else {
+                        service.getAfter(id, state.config.pageSize)
+                    }
                 }
-                LoadType.PREPEND -> {
 
-                    service.getLatest(state.config.pageSize)
-                }
-                LoadType.PREPEND -> {
-
-
-                    val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(false)
-                    service.getAfter(id, state.config.pageSize)
-
-                }
 
                 LoadType.APPEND -> {
 
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(false)
                     service.getBefore(id, state.config.pageSize)
 
+                }
+                else -> {
+                    return MediatorResult.Success(false)
                 }
             }
 
@@ -73,47 +73,53 @@ class PostRemoteMediator(
 
                 when (loadType) {
                     LoadType.REFRESH -> {
+                        //postDao.clear()
 
+                        if (!data.isNullOrEmpty()) {
 
-                        postDao.clear()
-                        postRemoteKeyDao.insert(
-                            listOf(
-                                PostRemoteKeyEntity(
-                                    PostRemoteKeyEntity.KeyType.AFTER,
-                                    data.first().id,
-                                ),
-                                PostRemoteKeyEntity(
-                                    PostRemoteKeyEntity.KeyType.BEFORE,
-                                    data.last().id,
-                                ),
-                            )
-                        )
-                    }
-                    LoadType.PREPEND -> {
-
-                        postRemoteKeyDao.insert(
-                            listOf(
-                                PostRemoteKeyEntity(
-                                    PostRemoteKeyEntity.KeyType.AFTER,
-                                    data.first().id,
-                                ),
-
+                            if (postDao.isEmpty()) {
+                                postRemoteKeyDao.insert(
+                                    listOf(
+                                        PostRemoteKeyEntity(
+                                            PostRemoteKeyEntity.KeyType.AFTER,
+                                            data.first().id,
+                                        ),
+                                        PostRemoteKeyEntity(
+                                            PostRemoteKeyEntity.KeyType.BEFORE,
+                                            data.last().id,
+                                        ),
+                                    )
                                 )
-                        )
+                            } else {
+                                postRemoteKeyDao.insert(
+                                    PostRemoteKeyEntity(
+                                        PostRemoteKeyEntity.KeyType.AFTER,
+                                        data.first().id
+                                    )
+                                )
+                            }
+                        }
+
                     }
+
                     LoadType.APPEND -> {
+                        if (!data.isNullOrEmpty()) {
+                            postRemoteKeyDao.insert(
+                                listOf(
 
-                        postRemoteKeyDao.insert(
-                            listOf(
-
-                                PostRemoteKeyEntity(
-                                    PostRemoteKeyEntity.KeyType.BEFORE,
-                                    data.last().id,
-                                ),
+                                    PostRemoteKeyEntity(
+                                        PostRemoteKeyEntity.KeyType.BEFORE,
+                                        data.last().id,
+                                    ),
+                                )
                             )
-                        )
+                        }
+                    }
+                    else -> {
+
                     }
                 }
+
 
                 postDao.insert(data.map(PostEntity.Companion::fromDto))
             }
